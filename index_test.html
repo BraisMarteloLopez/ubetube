@@ -1,0 +1,48 @@
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Hablando</title>
+    <style type="text/css">
+    	
+		body {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    height: 150px;
+		    margin: 0;
+		    background-color: #f0f0f0;
+		}
+
+		.image-container img {
+		    width: 150px;
+		    height: auto;
+		}
+
+
+    </style>
+</head>
+<body>
+    <div class="image-container">
+        <img id="avatar" src="images/phil_01.png" alt="Avatar Hablando">
+    </div>
+
+       <script type="text/javascript">
+    	
+    	const avatar = document.getElementById('avatar');
+		let isMouthOpen = false;
+
+		document.addEventListener('keydown', function(event) {
+		    if (event.key === 'ArrowRight') {
+		        isMouthOpen = !isMouthOpen;
+		        avatar.src = isMouthOpen ? 'images/phil_02.png' : 'images/phil_01.png';
+		    }
+		});
+
+    </script>
+</body>
+</html>

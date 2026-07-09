@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resaltar palabra por palabra</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 38px;
+            line-height: 0.99;
+            color: hsla(0, 100%, 100%, 1.0);
+            transition: opacity 2s ease-in-out; 
+        }
+
+        p {
+                margin:0px;
+                margin-top: 2px;
+            line-height: 0.99;
+        }
+
+        #afterText{
+            height: 3000px;
+        }
+
+        #espacio
+        {
+            width: 425px;
+            height: 245px;
+            border-radius: 18px;
+            background: hsla(0, 0%, 0%, 0.0);
+            padding-top: 95px; 
+        }
+
+        #texto
+        {   
+            display: block;
+            width: 425px;
+            height: 245px;
+            padding-left: 0px;
+            padding-right: 0px;
+            border-radius: 18px;
+        }
+
+        .resaltado {
+            margin:0px;
+            padding: 0px;
+            padding-top: 0px;
+            padding-bottom: 4px;
+            display: inline-block;
+            color: hsl(43, 100%, 77.31%, 1);
+            background-color: hsl(11.6deg 80.0% 40.0%);
+            border: 1px solid hsla(0, 0%, 0%, 0.35);
+            z-index: 10;
+            font-size: 42px;
+        }
+
+
+    .no-resaltada {
+        /* Estilo para las palabras antes de ser resaltadas */
+            opacity: 0.65;
+            margin:0px;
+            padding: 0px;
+            padding-top: 2px;
+            padding-bottom: 6px;
+            padding-left: 1px;
+            padding-right: 1px;
+        display: inline-block;
+        background: hsla(0, 0%, 0%, 0.62);
+    }
+
+    .ya-resaltada {
+        opacity: 0.282;     
+    }
+
+
+        .resaltadoPrev {
+        }
+
+        ._media{
+                scale:0.98;
+        }
+
+
+        .image-container img {
+            width: 305px;
+            height: auto;
+            position: absolute;
+            margin: 0px;
+            margin-left: -23px;
+            margin-top: 1px;
+            padding: 0px;
+            transform: scaleX(-1);
+        }
+
+
+        #phil
+        {
+
+            position: fixed;
+            width: 275px;
+            height: 275px;
+            margin-left: 450px;
+            margin-top: -174px;
+            background: hsla(0, 0%, 0%, 0.1282);
+            border-radius: 250px;
+            z-index: 999;
+        }
+
+        strong {
+    font-weight: bold; /* Negrita para texto destacado */
+}
+    </style>
+</head>
+<body>
+    <input type="file" id="startAudio" style="margin: 0px;position: absolute;z-index: 999; margin-top: -175px" accept="video/*">
+    <input type="file" style="margin: 0px;position: absolute;z-index: 999; margin-top: -100px" id="archivoInput" accept=".txt">
+
+
+    <div class="image-container" id="phil">
+        <img id="ojo" src="images/sauria/ojo/Sauria_ojo_1a.png" alt="ojo" style="z-index: 1024;">
+        <img id="avatar" class="pic" src="images/sauria/Sauria_1.png" alt="Avatar Hablando" style="z-index: 1004;">
+        <img id="libro" class="pic" src="images/sauria/Sauria_1_libro.png" alt="Avatar Hablando" style="z-index: 1014;">
+    </div>
+
+    <div id="media" class="_media" style="width:2560px; height: 1080px;margin-left: 330px; margin-top: -435px; position: fixed;">
+        
+    <video id="my_video" class="video-fondo" autoplay loop playsinline>
+        <source src="" type="video/mp4">
+    </video>
+    </div>
+
+    <div id="espacio" style="margin-left: 460px; margin-top: 427px; z-index: 100;position: relative;overflow: hidden;">
+    <div id="relleno"> </div>
+    <div id="texto" style="z-index: 101;overflow: hidden;">
+        
+    </div>
+    <div id="afterText"></div>
+
+<script>
+
+
+let lastScrool = 0;
+
+    function autoScrool()
+    {
+
+
+    
+
+
+    const contenedor = document.getElementById('texto');
+    const elementoResaltado = document.querySelector('.resaltado');
+
+    if(elementoResaltado)
+    {
+
+        
+        
+
+            const rectElemento = elementoResaltado.getBoundingClientRect();
+            const rectContenedor = contenedor.getBoundingClientRect();
+
+            const offset = rectElemento.top - rectContenedor.top - (rectContenedor.height / 2) + (elementoResaltado.clientHeight / 2) - 200;
+
+            
+        if(lastScrool < offset)
+        {
+
+            console.log(offset);
+            console.log(lastScrool);
+            console.log("-------------------------");
+
+
+            lastScrool = offset;
+
+            setTimeout(() => {
+                elementoResaltado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 16);
+        }
+    }
+}
+
+
+
+
+
+
+// Ancho máximo permitido para una línea de texto
+const maxWidth = 146; // Puedes ajustar este valor según tus necesidades
+let push = 0;
+
+// Función para dividir el texto en párrafos, considerando saltos de línea
+function dividirPorAncho(texto, maxWidth) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = '16px Arial'; // Debe coincidir con la fuente usada en el CSS
+
+    const lineas = texto.split('\n'); // Dividir el texto por saltos de línea
+    let parrafos = [];
+
+    lineas.forEach(linea => {
+        const palabras = linea.trim().split(' ');
+        let nuevaLinea = '';
+
+        palabras.forEach(palabra => {
+            const pruebaLinea = nuevaLinea + palabra + ' ';
+            const ancho = context.measureText(pruebaLinea).width;
+            if (ancho > maxWidth) {
+                parrafos.push(nuevaLinea.trim());
+                nuevaLinea = palabra + ' ';
+            } else {
+                nuevaLinea = pruebaLinea;
+            }
+        });
+
+        if (nuevaLinea.trim() !== '') {
+            parrafos.push(nuevaLinea.trim());
+        }
+
+        // Añadir un salto de línea entre párrafos si la línea está vacía
+        if (linea.trim() === '') {
+            parrafos.push('<br>');
+        }
+    });
+
+    return parrafos;
+}
+
+// Función para envolver cada palabra en un span
+function envolverPalabrasEnSpans(parrafo) {
+    return parrafo.split(' ').map(palabra => `<span class="no-resaltada">${palabra}</span>`).join(' ');
+}
+
+// Insertar los párrafos generados en el contenedor de texto
+function insertarParrafos(parrafos) {
+    const contenedorTexto = document.getElementById('texto');
+    contenedorTexto.innerHTML = ''; // Limpiar el contenedor actual
+
+    parrafos.forEach(parrafo => {
+        if (parrafo === '<br>') {
+            const br = document.createElement('br');
+            contenedorTexto.appendChild(br);
+        } else if (parrafo.trim() !== '') { // Ignorar párrafos vacíos
+            const p = document.createElement('p');
+            p.innerHTML = envolverPalabrasEnSpans(parrafo); // Envolver las palabras en spans
+            contenedorTexto.appendChild(p);
+        }
+    });
+}
+
+// Evento para cargar el archivo
+document.getElementById('archivoInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const textoLargo = e.target.result;
+            const parrafosTextos = dividirPorAncho(textoLargo, maxWidth);
+            insertarParrafos(parrafosTextos);
+
+            // Actualizar la referencia a los párrafos en el DOM después de que se hayan insertado
+            const parrafos = document.querySelectorAll('#texto p');
+
+            // Variables para el control del resaltado
+            let palabraIndex = 0; // Índice de palabras en el párrafo actual
+            let parrafoIndex = 0; // Índice del párrafo actual
+
+            function actualizarResaltado() {
+                // Verificación de los límites de los índices
+                if (parrafoIndex >= parrafos.length) return;
+
+                // Limpiar el resaltado actual
+                parrafos.forEach(p => {
+                    const spans = p.querySelectorAll('span');
+                    spans.forEach(span => {
+                        if (span.className !== 'ya-resaltada') {
+                            span.className = 'no-resaltada';
+                        }
+                    });
+                });
+
+                // Obtener todas las palabras (spans) en el párrafo actual
+                const spans = parrafos[parrafoIndex].querySelectorAll('span');
+                let palabrasResaltadas = 0;
+
+                // Resaltar tres palabras consecutivas
+                spans.forEach((span, index) => {
+                    if (index >= palabraIndex && palabrasResaltadas < 2) {
+                        span.className = 'resaltado';
+                        palabrasResaltadas++;
+                    } else if (index < palabraIndex) {
+                        span.className = 'ya-resaltada'; // Aplicar clase para palabras ya resaltadas
+                    } else {
+                        span.className = 'no-resaltada';
+                    }
+                });
+
+                // Desplazar la vista hacia las palabras resaltadas
+                const elementoResaltado = document.querySelector('.resaltado');
+                if (elementoResaltado) {
+                    elementoResaltado.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    //autoScrool();
+                }
+            }
+
+            function avanzarPalabra() {
+                if (parrafoIndex >= parrafos.length){return;} 
+
+                const spans = parrafos[parrafoIndex].querySelectorAll('span');
+
+                // Actualizar las últimas palabras resaltadas del párrafo actual antes de avanzar al siguiente párrafo
+                spans.forEach((span, index) => {
+                    if (index >= palabraIndex && index < palabraIndex + 3) {
+                        span.className = 'ya-resaltada';
+                    }
+                });
+
+                // Comprobar si hay suficientes palabras restantes en el párrafo para avanzar
+                if (palabraIndex + 2 < spans.length) {
+                    // Avanzar exactamente 3 palabras
+                    palabraIndex += 2;
+                } else {
+                    // Si alcanzamos el final del párrafo, pasamos al siguiente párrafo
+                    palabraIndex = 0;
+                    parrafoIndex++;
+
+                    //console.log("get");
+                    
+
+                    // Ignorar posibles párrafos vacíos o con solo saltos de línea
+                    while (parrafoIndex < parrafos.length && parrafos[parrafoIndex].innerText.trim() === '') {
+                        parrafoIndex++;
+                    }
+                }
+
+                // Actualizar el resaltado después de avanzar
+                actualizarResaltado();
+                push++
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowRight') {
+                    avanzarPalabra();
+                }
+            });
+
+            // Resaltar las primeras tres palabras al cargar el archivo
+            actualizarResaltado();
+            push++
+        };
+        reader.readAsText(file);
+    }
+});
+
+
+
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+let ojo = document.getElementById("ojo");
+let getRandom = 0;
+let random2 = 0;
+let pestañeo = 0;
+
+        
+        function idle_ojo()
+        {
+
+            getRandom = getRandomInt(0, 3);
+
+
+            if( getRandomInt(0, 4) == 0)
+            {
+
+                pestañeo = 1;
+                ojo.src = 'images/sauria/ojo/Sauria_ojo_1d.png';
+                setTimeout(idle_ojo, 85 + getRandomInt(0, 285));
+                return;
+            }
+
+
+            switch(getRandom)
+            {
+
+                case 0:
+                    ojo.src = 'images/sauria/ojo/Sauria_ojo_1a.png';
+                break;
+
+                case 1:
+                    ojo.src = 'images/sauria/ojo/Sauria_ojo_1b.png';
+                break;
+
+                case 2:
+                    ojo.src = 'images/sauria/ojo/Sauria_ojo_1c.png';
+                break;
+
+                case 3:
+                    ojo.src = 'images/sauria/ojo/Sauria_ojo_1e.png';
+                break;    
+            }  
+
+            //avatar.src = 'images/Sauria_1.png';
+
+            random2 = getRandomInt(0, 3);
+
+            if(random2 == 0) { random2 = getRandomInt(0, 450); }
+            else { random2 = getRandomInt(250, 850);}    
+
+
+            setTimeout(idle_ojo, 250 + random2);
+        }
+
+        idle_ojo();
+
+
+let boca = document.getElementById("avatar");
+let getRandom3 = 0;
+let random4 = 0;
+let hablando = 0;
+let previus = 0;
+
+        function idle_boca()
+        {
+
+
+            if(hablando == 0)
+            {
+
+             boca.src = 'images/sauria/Sauria_1.png';
+            }else
+            {
+
+                getRandom3 = getRandomInt(0, 3);
+
+                if(previus == getRandom3) { getRandom3++; }
+                if(getRandom3 > 2) {getRandom3 = 0;} 
+
+                switch(getRandom3)
+                {
+
+                    case 0:
+                        boca.src = 'images/sauria/Sauria_1.png';
+                        previus = 0;
+                    break;
+
+                    case 1:
+                        boca.src = 'images/sauria/Sauria_2.png';
+                        previus = 1;
+                    break;
+
+                    case 2:
+                        boca.src = 'images/sauria/Sauria_3.png';
+                        previus = 2;
+                    break;     
+                }
+            }
+
+            //avatar.src = 'images/Sauria_1.png';
+
+            random4 = getRandomInt(0, 3);
+
+            if(random4 == 0) { random4 = getRandomInt(0, 45); }
+            else { random4 = getRandomInt(25, 65); }
+
+            setTimeout(idle_boca, 55 + random4);
+        }
+
+        idle_boca();
+
+
+
+let libro = document.getElementById("libro");
+let getRandom5 = 0;
+let random6 = 0;
+
+
+        function idle_libro()
+        {
+
+            getRandom5 = getRandomInt(0, 1);
+
+
+            if(getRandom5 == 0) { libro.style.opacity = "0"; }
+            else{ libro.style.opacity = "1"; }
+ 
+
+            random6 = getRandomInt(0, 3);
+
+            if(random6 == 0) { random6 = getRandomInt(250, 750); }
+            else { random6 = getRandomInt(700, 1500); }
+
+            setTimeout(idle_libro, 700 + random6);
+        }
+
+        idle_libro();
+
+
+let audioContext;
+let analyser;
+let dataArray;
+
+    document.getElementById('startAudio').addEventListener('change', function (event) {
+            
+            const file = event.target.files[0];
+            document.getElementById('my_video').src = URL.createObjectURL(file);
+           // console.log(URL.createObjectURL(file));
+
+            initialize_autoControlAudio();
+        });
+
+
+    function initialize_autoControlAudio()
+    {
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const video = document.getElementById('my_video');
+            analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaElementSource(video);
+            
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            video.volume = 1.0;
+
+            //console.log('AudioContext inicializado y conectado');
+
+            checkSound();
+    }
+
+
+
+    function checkSound() {
+        analyser.getByteFrequencyData(dataArray);
+        const sum = dataArray.reduce((a, b) => a + b, 0);
+        const average = sum / dataArray.length;
+
+        if (average > 1) {  
+
+            hablando = 1;
+
+        } else {
+
+            hablando = 0;
+        }
+        setTimeout(checkSound, 16);
+    }
+
+
+
+</script>
+</body>
+</html>
